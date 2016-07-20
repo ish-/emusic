@@ -7,14 +7,13 @@ var nextAudio
 var p = Object.create({
 
   playGroup (group) {
-    if (nextAudio) {
-      nextAudio.destroy()
-      nextAudio = null
-    }
     if (group && this.group !== group) {
       this.group = group
       VK.Storage.set('group', group)
-    }
+      if (nextAudio)
+        nextAudio.destroy
+    } else if (nextAudio) 
+      return
 
     if (!this.group)
       throw new Error('Player error: no selected group')
@@ -24,9 +23,8 @@ var p = Object.create({
         this.audio.destroy()
       this.setAudio(audio)
       VK.Storage.set('audio', this.audio.info)
-    })).then(() => {
       return this.play()
-    })
+    }))
   },
 
   playNext () {
@@ -49,7 +47,7 @@ var p = Object.create({
 
   playGroupSequence (audio) {
     VK.Group.getRandomPostAudio(this.group).then((audio) => {
-      var nextAudio = new PlayerAudio(audio)
+      nextAudio = new PlayerAudio(audio)
       nextAudio.play()
       Shared.$once('audio:end', (curAudio) => {
         this.setAudio(nextAudio)
