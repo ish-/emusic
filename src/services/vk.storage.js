@@ -11,6 +11,8 @@ export default {
   get (...keys) {
     return request('storage.get', {keys}).then((props) => {
       return props.reduce((m, prop) => {
+        if (!prop.value)
+          return m
         try {
           m[prop.key] = JSON.parse(prop.value.substr(3)) || null
         } catch (e) {

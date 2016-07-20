@@ -17,6 +17,7 @@
 import VK from 'services/vk'
 import player from 'services/player'
 import Shared from 'services/shared'
+import groups from 'services/vk.groups'
 
 import Player from 'components/Player.vue'
 import GroupList from 'components/GroupList.vue'
@@ -48,10 +49,19 @@ export default {
 
     VK.inited.then(() => {
       this.ready = true
-      VK.Storage.get('group', 'audio').then(({audio, group}) => {
-        group && this._selectGroup(group)
-        if (audio && audio.id)
-          player.setAudio(audio)
+      VK.Storage.get('group', 'playlist').then(({playlist, group}) => {
+        if (playlist && playlist.length) {
+          playlist = playlist.map((audio) => {
+            var [owner_id, id, groupId] = audio
+            return {owner_id, id, group: groups.byId(groupId)}
+          })
+          VK.Audio.getById(playlist).then((playlist) => {
+            player.playlist = playlist
+            if (playlist.length)
+              player.setAudio(playlist[0])
+            group && this._selectGroup(group)
+          })
+        }
       }, (e) => {
         console.error('Cannot load data from storage')
       })

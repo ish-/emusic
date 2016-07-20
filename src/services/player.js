@@ -22,7 +22,6 @@ var p = Object.create({
       if (this.audio)
         this.audio.destroy()
       this.setAudio(audio)
-      VK.Storage.set('audio', this.audio.info)
       return this.play()
     }))
   },
@@ -51,7 +50,6 @@ var p = Object.create({
       nextAudio.play()
       Shared.$once('audio:end', (curAudio) => {
         this.setAudio(nextAudio)
-        VK.Storage.set('audio', this.audio.info)
         nextAudio = null
       })
     })
@@ -59,8 +57,18 @@ var p = Object.create({
 
   setAudio (audio) {
     this.audio = (audio instanceof PlayerAudio) ? audio : new PlayerAudio(audio)
-    this.audio.info.group = this.group
-    this.playlist.unshift(this.audio.info)
+    
+    if (!this.audio.info.group && this.group)
+      this.audio.info.group = this.group
+
+    if (!~this.playlist.indexOf(audio)) {
+      this.playlist.unshift(this.audio.info)
+
+      VK.Storage.set('playlist', this.playlist.slice(0, 20).map((audio) => {
+        const {owner_id, id, group} = audio
+        return [owner_id, id, group.id]
+      }))
+    }
   },
 
   togglePlay () {
