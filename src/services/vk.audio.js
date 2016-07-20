@@ -1,9 +1,11 @@
+import _ from 'utils'
 import request from 'services/vk.request'
 
 export default {
-  getUrl ({owner_id, id}) {
-    return request('audio.getById', {audios: `${owner_id}_${id}`}).then((audio) => {
-      return audio.url
+  getById (_audios) {
+    var audios = _audios.map((a) => `${a.owner_id}_${a.id}`)
+    return request('audio.getById', {audios}).then((audios) => {
+      return _.merge(_audios, audios)
     })
   },
 

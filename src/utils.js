@@ -3,6 +3,7 @@ import noop from 'lodash/noop'
 import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import compact from 'lodash/compact'
+import merge from 'lodash/merge'
 // import pick from 'lodash/pick'
 
 export default {
@@ -13,6 +14,7 @@ export default {
   addScript,
   pick,
   compact,
+  merge,
   once (obj, eventName, fn) {
     var _fn = (e) => {
       _remove()

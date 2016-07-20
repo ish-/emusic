@@ -77,7 +77,7 @@ export default class PlayerAudio {
   updateInfo(e) {
     if (this.updated)
       return this._onError(e)
-    return VK.Audio.getUrl(this.info).then((info) => {
+    return VK.Audio.getById([this.info]).then(([info]) => {
       this.destroy()
       console.log('PlayAudio update', this.toString())
       this.updated = true
