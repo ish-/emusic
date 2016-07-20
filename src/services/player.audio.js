@@ -1,5 +1,5 @@
-// TODO: on set current time return correct oncanplay promise
 // TODO: pause and play smoothy
+// TODO: get like from users's playlist
 
 import Shared from 'services/shared'
 import VK from 'services/vk'
@@ -12,9 +12,10 @@ export default class PlayerAudio {
     this.volume = 1
     this.buffered = 0
     this.paused = true
-    this.added = false
+
 
     this.info = info || {}
+    this.info.added == null && (this.info.added = false)
 
     if (!info)
       return
