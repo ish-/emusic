@@ -3,6 +3,7 @@
 
 import Shared from 'services/shared'
 import VK from 'services/vk'
+import _ from 'utils'
 
 export default class PlayerAudio {
 
@@ -34,14 +35,23 @@ export default class PlayerAudio {
     this._htmlAudio.onerror = this._onError
     
     this.canplaythrough = new Promise((resolve, reject) => {
-      this._htmlAudio.oncanplaythrough = () => {
+      _.once(this._htmlAudio, 'canplaythrough', () => {
+        if (this.dead)
+          return reject()
+        this._htmlAudio.addEventListener('progress', this._onProgress)
+        this._htmlAudio.addEventListener('timeupdate', this._onTimeupdate)
+        resolve()
+      })
+    })
+  }
+
+  _deferCanPlayOnce (fn) {
+    return new Promise((resolve, reject) => {
+      _.once(this._htmlAudio, 'canplaythrough', () => {
         if (this.dead)
           return reject()
         resolve()
-        this._htmlAudio.oncanplaythrough = null
-        this._htmlAudio.addEventListener('progress', this._onProgress)
-        this._htmlAudio.addEventListener('timeupdate', this._onTimeupdate)
-      }
+      })
     })
   }
 
@@ -58,7 +68,7 @@ export default class PlayerAudio {
         return Promise.reject('PlayerAudio is already dead')
       setTimeout(() => {
         this._htmlAudio.play()
-      }, 0)
+      }, 5)
       this.paused = false
       return true
     })
@@ -83,6 +93,7 @@ export default class PlayerAudio {
 
     this.pause()
     this._htmlAudio.currentTime = seek * this._htmlAudio.duration
+    this.canplaythrough = this._deferCanPlayOnce()
     return this.play()
   }
 

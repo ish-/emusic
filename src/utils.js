@@ -13,6 +13,18 @@ export default {
   addScript,
   pick,
   compact,
+  once (obj, eventName, fn) {
+    var _fn = (e) => {
+      _remove()
+      fn.call(obj, e, obj)
+    }
+    function _remove () {
+      obj.removeEventListener(eventName, _fn)
+    }
+
+    obj.addEventListener(eventName, _fn)
+    return _remove
+  },
   log () { console.log.apply(console, arguments) },
   clone (o) {
     return JSON.parse(JSON.stringify(o))
