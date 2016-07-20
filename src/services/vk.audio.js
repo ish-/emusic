@@ -3,7 +3,7 @@ import request from 'services/vk.request'
 
 export default {
   getById (_audios) {
-    var audios = _audios.map((a) => `${a.owner_id}_${a.id}`)
+    var audios = _audios.map((a) => `${a.owner_id}_${a.id}`).join(',')
     return request('audio.getById', {audios}).then((audios) => {
       return _.merge(_audios, audios)
     })
