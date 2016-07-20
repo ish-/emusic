@@ -1,0 +1,27 @@
+$black = #000000
+$dark-grey = #545454
+$grey = #AFAFAF
+
+$blue-light = #68D0FF
+$blue = #00A2EA
+
+$page-padding = 20px
+$header-font-size = 36px
+$header-padding-bottom = 15px
+
+
+$player-btns-margin = 20px
+$player-top = $page-padding + $header-padding-bottom + $header-font-size
+
+transition-default()
+  transition: all .2s ease
+
+font-weight(weight)
+  if weight is 'thin'
+    font-weight: 100
+  if weight is 'light'
+    font-weight: 300
+  if weight is 'regular'
+    font-weight: 400
+  if weight is 'medium'
+    font-weight: 400

@@ -1,0 +1,57 @@
+.opacity-scale
+  &-transition
+    transform: scale(1)
+    transition-default()
+    opacity: 1
+  
+  &-enter, &-leave
+    opacity: 0
+    
+  &-enter
+    transform: scale(2)
+  &-leave
+    transform: scale(.6)
+    
+.opacity
+  &-transition
+    transition-default()
+    opacity: 1
+    transition-timeout: .3s
+  
+  &-enter, &-leave
+    opacity: 0
+    
+  // &-enter
+    
+    
+.translate-from-down
+  &-transition
+    transition: all .2s ease
+    transform: translateY(0)
+    opacity: 1
+    
+  &-enter
+    opacity: 0
+    transform: translateY(100vh)
+  &-leave
+    opacity: 0
+    
+.translate-from-right
+  &-transition
+    transition: all .2s ease
+    transform: translateX(0)
+    opacity: 1
+    
+  &-enter
+    opacity: 0
+    transform: translateX(50vh)
+  &-leave
+    opacity: 0
+    
+@keyframes rotate
+  0%
+    transform: rotate(0deg)
+  50%
+    transform: rotate(180deg)
+  100%
+    transform: rotate(360deg)

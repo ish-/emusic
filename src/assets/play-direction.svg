@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="64px" height="44px" viewBox="0 0 64 44" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <linearGradient x1="75.4063871%" y1="-115.234375%" x2="74.2557566%" y2="-72%" id="linearGradient-1">
+            <stop stop-color="#EEEEEE" offset="69%"></stop>
+            <stop stop-color="#F2F8FF" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Inside-group" transform="translate(-398.000000, -207.000000)" fill="url(#linearGradient-1)">
+            <g id="Ctrls-#2" transform="translate(1.000000, 148.000000)">
+                <path d="M431.588235,83 L451,83 L429,49 L407,83 L426.411765,83 L407,113 L451,113 L431.588235,83 Z" id="Combined-Shape" transform="translate(429.000000, 81.000000) rotate(90.000000) translate(-429.000000, -81.000000) "></path>
+            </g>
+        </g>
+    </g>
+</svg>

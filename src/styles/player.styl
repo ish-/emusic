@@ -1,0 +1,174 @@
+.c-player
+  absolute: top $player-top bottom 0 left 0 right 0
+  z-index: 20
+  
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: space-between
+  
+  > *
+    width: 100%
+  
+  &__info
+    font-weight('light')
+  
+  &__artist
+    font-size: 36px
+    overflow: ellipsis
+    margin-bottom: 5px
+    
+  &__title
+    font-size: 24px
+    overflow: ellipsis
+    margin-bottom: 20px
+    
+  &__duration
+    margin-left: 1em
+    
+  $seek-height = 20px
+
+  &-seek
+    position: relative
+    overflow: hidden
+    border-radius: 10px
+    cursor: pointer
+    size: 100% $seek-height
+    background: $blue-light
+    
+    /* Oval 1: */
+    background-image: radial-gradient(74% 131%, #C1F1FF 31%, #F2F8FF 100%);
+    
+    $progress-padding = 1px
+
+    &__progress, &__loaded
+      height: $seek-height - $progress-padding * 2
+      background: $blue
+      position: absolute
+      left: $progress-padding
+      top: $progress-padding
+      width: 0%
+      min-width: (@height) !important
+      pointer-events: none
+      border-radius: 100px
+      background-image: linear-gradient(-210deg, #C1F1FF 0%, #F2F8FF 100%);
+      
+    &__progress
+      transition: width .2s ease
+        box-shadow: rgb(179, 231, 255) 4px 0px 11px 0px
+
+    &__loaded
+      opacity: .5
+      position: absolute
+      
+  .o-btn-direction svg path
+    fill: $blue-light !important
+      
+  .o-btn-play
+    size: 140px
+    margin: 0 50px
+    position: relative  
+
+    > *
+      z-index: 1
+      pointer-events: none
+    
+    &:after
+      content: ''
+      size: 140px
+      border-radius: (@width / 2)
+      // background-image: radial-gradient(74% 131%, #C1F1FF 31%, #F2F8FF 100%);
+      background: $blue
+      absolute: top left
+      
+      transition: box-shadow .1s ease
+      box-shadow: 0 0 0 0 black inset
+      
+    &.is-clicked:after
+        box-shadow: 0 2px 5px 0 grey inset
+      // z-index: 2
+    
+    &:before
+      content: ''
+      size: 160px
+      border-radius: (@width / 2)
+      background-image: radial-gradient(74% 131%, #C1F1FF 31%, #F2F8FF 100%);
+      absolute: top -10px left -10px
+      transform: scale(0.8)
+      opacity: 0
+      transition: all .4s ease
+      
+    &:disabled:before
+        transform: scale(1)
+        opacity: 1
+        animation: rotate .2s infinite
+      // z-index: 1
+
+    &__icon-pause
+      size: 42px 54px
+      absolute: top 50% left 50%
+      margin-top: -(@height / 2)
+      margin-left -(@width / 2)
+      
+      &:before, &:after
+        size: 16px 54px
+        content: ''
+        background: white
+        position: absolute
+        
+      &:before
+        left: 0
+      &:after
+        right: 0
+        
+
+    &__icon-play
+      $size = 54px
+      $half-size = $size / 2
+
+      absolute: top 50% left 50%
+      margin-top: -($size / 2)
+      margin-left: -($size / 2 - $size / 6)
+      
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: $half-size 0 $half-size $size;
+      border-color: transparent transparent transparent white;
+      
+      &.opacity-scale-enter
+        transform: scale(.6)
+      &.opacity-scale-leave
+        transform: scale(2)
+        
+  .o-btn-direction
+    &--backward
+      transform: rotate(180deg)
+      
+  .o-btn-escape, .o-btn-playlist
+    float: right
+    margin-left: 20px
+    
+  .o-btn-like
+    transition-default()
+    trasform: scale(1)
+
+    &.is-liked svg path
+      fill: red
+      
+    &.is-clicked
+      transform: scale(1.2)
+      
+.c-player__playback
+  width: auto
+  margin: 0 auto
+  
+  > *
+    display: inline-block
+    text-align: center
+    vertical-align: middle
+    
+.c-player__btns
+  margin: 20px 0
+  .o-btn
+    vertical-align: middle
