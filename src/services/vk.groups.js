@@ -1,34 +1,34 @@
-export default [
+const genres = [
   {
     name: 'Electronic',
     groups: [
       {
         name: 'vaporwave',
-        id: '64858245'
+        id: 64858245
       }, {
         name: 'drone',
-        id: '34125866'
+        id: 34125866
       }, {
         name: 'psybient',
-        id: '29583317'
+        id: 29583317
       }, {
         name: 'future garage',
-        id: '25247340'
+        id: 25247340
       }, {
         name: 'ambient',
-        id: '27122967'
+        id: 27122967
       }, {
         name: 'dub techno',
-        id: '55120308'
+        id: 55120308
       }, {
         name: 'ritual',
-        id: '36286213'
+        id: 36286213
       }, {
         name: 'glitch',
-        id: '44955915'
+        id: 44955915
       }, {
         name: 'minimal',
-        id: '33837896'
+        id: 33837896
       },
     ]
   }, {
@@ -36,10 +36,10 @@ export default [
     groups: [
       {
         name: 'mathcore',
-        id: '28457642'
+        id: 28457642
       }, {
         name: 'chaotic hardcore',
-        id: '37441775'
+        id: 37441775
       }, 
     ]
   }, {
@@ -47,8 +47,20 @@ export default [
     groups: [
       {
         name: 'lucidity',
-        id: '36976241'
+        id: 36976241
       }
     ]
   }
 ]
+
+
+const groupsById = genres.reduce((groups, genre) => {
+  genre.groups.forEach((group) => groups[group.id] = group)
+  return groups
+}, {})
+
+genres.byId = function (id) {
+  return groupsById[id]
+}
+
+export default genres
