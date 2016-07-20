@@ -63,7 +63,9 @@ export default {
         if (!audios.length)
           continue
 
-        return audios[_.random(0, audios.length - 1)]
+        let audio = audios[_.random(0, audios.length - 1)]
+        audio.postId = item.postId
+        return audio
       }
 
       if (i > 2)
@@ -74,27 +76,20 @@ export default {
   },
 }
 
-
-function getAttachments (post, id) {
-  if (post.attachments != null && post.attachments.length) {
-    var atts = post.attachments
-    id && (atts.id = id)
-    return atts
-  }
-  if (post.copy_history)
-    var {owner_id, id} = post.copy_history
-    return getAttachments(post.copy_history[0], `${owner_id}_${id}`)
-  return false
-}
-
 function CODE_GET_POST_OF_REPOST ({owner_id, offset, count}) { return `
   var _posts = API.wall.get({owner_id:${owner_id}, offset:${offset}, count:${count}}).items;
   var posts = [];
   var i = 0; while(i < _posts.length) {
     var post = _posts[i];
+    var _post;
     if (post.copy_history) {
       if (post.copy_history[0].attachments) {
-        post = API.wall.getById({posts: post.copy_history[0].owner_id + "_" + post.copy_history[0].id})[0];
+        _post = API.wall.getById({posts: post.copy_history[0].owner_id + "_" + post.copy_history[0].id})[0];
+        _post.postId = post.owner_id + "_" + post.id;
+        post = _post;
+      } else {
+        post.postId = post.owner_id + "_" + post.id;
+        delete post.owner_id;delete post.id;
       }
     }
     if (post.attachments) {

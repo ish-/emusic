@@ -1,24 +1,26 @@
-import VK from './vk'
-import PlayerAudio from './player.audio'
+import VK from 'services/vk'
+import PlayerAudio from 'services/player.audio'
 import Shared from 'services/shared'
+import groups from 'services/vk.groups'
 
 var nextAudio
 
 var p = Object.create({
 
-  playGroup (group) {
-    if (group && this.group !== group) {
-      this.group = group
-      VK.Storage.set('group', group)
-      if (nextAudio)
-        nextAudio.destroy
-    } else if (nextAudio) 
-      return
+  playGroup (nextTrack) {
+    if (!nextTrack) {
+      if (this.audio && Shared.group.id !== this.group.id) {
+        this.group = Shared.group
+        if (nextAudio)
+          nextAudio.destroy()
+      } else
+        return
+    }
 
-    if (!this.group)
+    if (!Shared.group)
       throw new Error('Player error: no selected group')
 
-    return this._wrapLoading(VK.Group.getRandomPostAudio(this.group).then((audio) => {
+    return this._wrapLoading(VK.Group.getRandomPostAudio(Shared.group).then((audio) => {
       if (this.audio)
         this.audio.destroy()
       this.setAudio(audio)
@@ -27,7 +29,7 @@ var p = Object.create({
   },
 
   playNext () {
-    this.playGroup()
+    this.playGroup(true)
   },
 
   playPrev () {
@@ -45,7 +47,7 @@ var p = Object.create({
   },
 
   playGroupSequence (audio) {
-    VK.Group.getRandomPostAudio(this.group).then((audio) => {
+    VK.Group.getRandomPostAudio(Shared.group).then((audio) => {
       nextAudio = new PlayerAudio(audio)
       nextAudio.play()
       Shared.$once('audio:end', (curAudio) => {
@@ -57,16 +59,16 @@ var p = Object.create({
 
   setAudio (audio) {
     this.audio = (audio instanceof PlayerAudio) ? audio : new PlayerAudio(audio)
-    
-    if (!this.audio.info.group && this.group)
-      this.audio.info.group = this.group
+
+    if (!this.audio.info.group && Shared.group)
+      this.audio.info.group = Shared.group
 
     if (!~this.playlist.indexOf(audio)) {
       this.playlist.unshift(this.audio.info)
 
       VK.Storage.set('playlist', this.playlist.slice(0, 20).map((audio) => {
-        const {owner_id, id, group} = audio
-        return [owner_id, id, group.id]
+        const {owner_id, id, group, postId} = audio
+        return [owner_id, id, group.id, postId]
       }))
     }
   },
@@ -94,12 +96,36 @@ var p = Object.create({
     return promise.then(() => this.loading = false)
   }
 })
+function dec (target, prop, desc) {
+  console.log(target, porp, desc)
+  return target
+}
+
+VK.inited.then(() => {
+  VK.Storage.get('playlist').then(({playlist}) => {
+    if (playlist && playlist.length) {
+      playlist = playlist.map((audio) => {
+        var [owner_id, id, groupId, postId] = audio
+        return {owner_id, id, group: groups.byId(groupId), postId}
+      })
+      VK.Audio.getById(playlist).then((playlist) => {
+        p.playlist = playlist
+        if (!playlist.length)
+          return
+        p.setAudio(playlist[0])
+        p.group = Shared.group = playlist[0].group
+      })
+    }
+  }, (e) => {
+    console.error('Cannot load data from storage', e)
+  })
+})
 
 Shared.$on('audio:near-end', p.playGroupSequence.bind(p))
 
 Object.assign(p, {
   audio: null,
-  group: null,
+  group: {},
   playlist: [],
   loading: false,
 })

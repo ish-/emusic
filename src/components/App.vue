@@ -3,11 +3,11 @@
 #app
   header.c-header(v-if="!showPlaylist", transition="translate-from-right")
     label(for="header-search") E:\music\
-    input.c-header__search#header-search(v-if="!selectedGroup", placeholder="search..", v-model="search", tabindex="1")
-    .c-header__group(v-if="selectedGroup") {{selectedGroup.name}}
+    input.c-header__search#header-search(v-if="!$.group", placeholder="search..", v-model="search", tabindex="1")
+    .c-header__group(v-if="$.group") {{$.group.name}}
     hr
-  group-list(v-if="!selectedGroup && !showPlaylist", transition="translate-from-right", :search="search")
-  player(v-if="selectedGroup && !showPlaylist", transition="translate-from-down")
+  group-list(v-if="!$.group && !showPlaylist", transition="translate-from-right", :search="search")
+  player(v-if="$.group && !showPlaylist && player.audio", transition="translate-from-down")
   playlist(v-if="showPlaylist", transition="translate-from-down")
 
 </template>
@@ -17,7 +17,6 @@
 import VK from 'services/vk'
 import player from 'services/player'
 import Shared from 'services/shared'
-import groups from 'services/vk.groups'
 
 import Player from 'components/Player.vue'
 import GroupList from 'components/GroupList.vue'
@@ -28,7 +27,7 @@ export default {
 
   data () {
     return {
-      selectedGroup: null,
+      player,
       ready: false,
       search: '',
       showPlaylist: false,
@@ -42,44 +41,15 @@ export default {
   created () {
     this.$on('playlist:show', (bool) => this.showPlaylist = bool)
     this.$on('group:select', (group) => {
-      if (!group)
-        return this.deselectGroup()
-      this.playGroup(group)
+      console.log('group:select', group)
+      Shared.group = group
+      if (group)
+        player.playGroup()
     })
 
     VK.inited.then(() => {
       this.ready = true
-      VK.Storage.get('group', 'playlist').then(({playlist, group}) => {
-        if (playlist && playlist.length) {
-          playlist = playlist.map((audio) => {
-            var [owner_id, id, groupId] = audio
-            return {owner_id, id, group: groups.byId(groupId)}
-          })
-          VK.Audio.getById(playlist).then((playlist) => {
-            player.playlist = playlist
-            if (playlist.length)
-              player.setAudio(playlist[0])
-            group && this._selectGroup(group)
-          })
-        }
-      }, (e) => {
-        console.error('Cannot load data from storage')
-      })
     })
-  },
-
-  methods: {
-    playGroup (group) {
-      const thenPlay = player.group && !(player.group.id === group.id)
-      this._selectGroup(group)
-      thenPlay && player.playGroup(group)
-    },
-    deselectGroup () {
-      this.selectedGroup = null
-    },
-    _selectGroup (group) {
-      this.selectedGroup = player.group = group
-    }
   },
 }
 

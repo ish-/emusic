@@ -7,7 +7,7 @@
       include ../assets/crest.svg
   ul.c-audio-list
     li.c-audio.u-relative(v-for="(i, audio) in player.playlist", @click="playAudio(i)")
-      span.c-audio__group(@click.stop="playGroup(group)") [{{* audio.group.name }}]
+      span.c-audio__group(@click.stop="playGroup(audio.group)") [{{* audio.group.name }}]
       span.c-audio__artist {{* audio.artist}}
       span.c-audio__title {{* audio.title}}
 
@@ -16,6 +16,7 @@
 
 <script>
 
+import Shared from 'services/shared'
 import player from 'services/player'
 
 export default {
@@ -31,7 +32,7 @@ export default {
       this.close()
     },
     playGroup (group) {
-      this.$dispatch('group:select', audio.group)
+      this.$dispatch('group:select', group)
       this.close()
     },
     close () {
@@ -47,14 +48,16 @@ export default {
 .c-playlist
   absolute: top 0 bottom 0 left 0 right 0
   z-index: 30
+  overflow: hidden
   
   .o-btn-escape
     margin-top: 10px
     float: right
     
 .c-audio-list
-  margin-top: 20px
-  height: 100%
+  absolute: top 45px left 0 bottom 0 right -20px
+  padding: 0 20px 0 0
+
   overflow-y: auto
 
 .c-audio
