@@ -2,13 +2,14 @@
 
 #app
   header.c-header(v-if="!showPlaylist", transition="translate-from-right")
-    label(for="header-search") E:\music\
-    input.c-header__search#header-search(v-if="!$.group", placeholder="search..", v-model="search", tabindex="1")
+    label(for="header-search", v-show="showEmusicLabel") E:\music\
+    input.c-header__search#header-search(v-show="!$.group", placeholder="search..", v-model="search", tabindex="1", v-el:search)
     .c-header__group(v-if="$.group") {{$.group.name}}
     hr
-  group-list(v-if="!$.group && !showPlaylist", transition="translate-from-right", :search="search")
-  player(v-if="$.group && !showPlaylist && player.audio", transition="translate-from-down")
+  group-list(v-if="showGroupList", transition="translate-from-right", :search="search")
+  player(v-if="showPlayer", transition="translate-from-down")
   playlist(v-if="showPlaylist", transition="translate-from-down")
+  .o-btn.o-btn-back(v-show="showBtnBack", @click="$.group = player.group", transition="opacity")
 
 </template>
 
@@ -40,8 +41,7 @@ export default {
 
   created () {
     this.$on('playlist:show', (bool) => this.showPlaylist = bool)
-    this.$on('group:select', (group) => {
-      console.log('group:select', group)
+    this.$on('group:select', (group, foreign) => {
       Shared.group = group
       if (group)
         player.playGroup()
@@ -51,6 +51,21 @@ export default {
       this.ready = true
     })
   },
+
+  computed: {
+    showGroupList () {
+      return !this.$.group && !this.showPlaylist
+    },
+    showEmusicLabel () {
+      return !(this.$.group && this.$.group.foreign)
+    },
+    showPlayer () {
+      return this.$.group && !this.showPlaylist && this.player.audio
+    },
+    showBtnBack () {
+      return !this.$.group && this.player.group.id
+    }
+  }
 }
 
 </script>
@@ -60,6 +75,7 @@ export default {
 #app
   position: relative
   height: 100%
+  overflow: hidden
 
 .c-header
   font-size: $header-font-size
@@ -87,5 +103,31 @@ export default {
     margin-left: 3px
     font-weight('light')
     display: inline-block
+
+.o-btn-back
+  size: 50px
+  border-radius: 50px
+  border: 1px solid $dark-grey
+  absolute: left 20px bottom 20px
+  
+  transition: all .2s ease-out
+  transition-delay: .3s
+  transform: translateY(0)
+  
+  &.opacity-leave
+    transition-delay: 0s
+    transform: translateY(-10px) scale(2) !important
+  
+  &:hover
+    transform: translateY(-10px)
+
+  &:after
+    size: 15px
+    content: ''
+    absolute: top 18px left 16px
+    border: 1px solid $dark-grey
+    border-width: 0 0 1px 1px
+    transform: rotate(135deg)
+    animation: blink 2s infinite ease
 
 </style>
