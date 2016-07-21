@@ -1,10 +1,11 @@
 <template lang="jade">
 
-ul.c-genre-list
-  li.c-genre(v-for="genre in genres", v-show="showAll || !genre.hide") 
-    .c-genre__name {{* genre.name}}
-    ul.c-group-list
-      li.c-group(v-for="group in genre.groups", @click="$dispatch('group:select', group)", v-show="showAll || !group.hide") {{* group.name}}
+.c-genre-list__container
+  ul.c-genre-list
+    li.c-genre(v-for="genre in genres", v-show="showAll || !genre._hide", @click="genre._folded = !genre._folded") 
+      .c-genre__name {{* genre.name}}
+      ul.c-group-list(v-show="!showAll || !genre._folded")
+        li.c-group(v-for="group in genre.groups", @click="$dispatch('group:select', group)", v-show="showAll || !group._hide") {{* group.name}}
 
 </template>
 
@@ -12,16 +13,22 @@ ul.c-genre-list
 
 import genres from 'services/vk.groups'
 
+genres.forEach((genre) => {
+  genre._folded = true
+})
+
 export default {
   name: 'GroupList',
 
   props: ['search'],
+
   data () {
     return {
       genres,
       showAll: false
     }
   },
+
   methods: {
     filter (search) {
       this.showAll = search.length < 3
@@ -32,27 +39,30 @@ export default {
       this.genres.forEach((genre) => {
         var anyGroup = false
         genre.groups.forEach((group) => {
-          group.hide = !REGEXP.test(group.name)
-          !anyGroup && (anyGroup = !group.hide)
-          console.log('g', group.hide)
+          group._hide = !REGEXP.test(group.name)
+          !anyGroup && (anyGroup = !group._hide)
         })
-        genre.hide = !anyGroup && !REGEXP.test(genre.name)
-        console.log('ge', genre.hide)
+        genre._hide = !anyGroup && !REGEXP.test(genre.name)
       })
     }
   },
-  watch: {
-    search (str) { this.filter(str) }
-  },
+
+  created () {
+    this.$watch('search', this.filter, {immediate: true})
+  }
 }
 
 </script>
 
 <style lang="stylus">
+
+.c-genre-list__container
+  absolute: top $player-top bottom 0 left 0 right -20px
+  overflow-y: auto
   
 .c-genre-list
   text-align: right
-  margin: 36px 0
+  padding: 36px 20px 58px 0
   
   .c-genre
     margin: 12px 0
