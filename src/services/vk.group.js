@@ -87,15 +87,16 @@ function CODE_GET_POST_OF_REPOST ({owner_id, offset, count}) { return `
         _post = API.wall.getById({posts: post.copy_history[0].owner_id + "_" + post.copy_history[0].id})[0];
         _post.postId = post.owner_id + "_" + post.id;
         post = _post;
-      } else {
-        post.postId = post.owner_id + "_" + post.id;
-        delete post.owner_id;delete post.id;
-      }
+      } 
+    }
+    else {
+      post.postId = post.owner_id + "_" + post.id;
     }
     if (post.attachments) {
       var as = post.attachments@.audio;
       post.audios = as;
       post.weight = post.likes.count + post.reposts.count * 2;
+      delete post.owner_id;delete post.id;
       delete post.attachments;delete post.text;delete post.post_type;delete post.comments;delete post.likes;delete post.reposts;
       posts.push(post);
     }
