@@ -9,6 +9,8 @@ const ERROR_IS_DEAD = 'PlayerAudio is already dead'
 
 export default class PlayerAudio {
 
+  static NEAR_END_TIME = 5
+
   constructor (info) {
     this.seek = 0
     this.volume = 1
@@ -37,7 +39,6 @@ export default class PlayerAudio {
     // audio.volume = this._volume = .1 // be quiet
     audio.src = this.info.url
     audio.onerror = this._onError
-    audio.preload = 'metadata'
     
     this.canplaythrough = new Promise((resolve, reject) => {
       _.once(audio, 'canplaythrough', () => {
@@ -72,11 +73,8 @@ export default class PlayerAudio {
     return this.canplaythrough.then(() => {
       if (this.dead)
         throw new Error (ERROR_IS_DEAD)
-      setTimeout(() => {
-        this._htmlAudio.play()
-      }, 5)
       this.paused = false
-      return true
+      return this._htmlAudio.play()
     })
   }
 
@@ -97,7 +95,6 @@ export default class PlayerAudio {
     if (this.nearEnd)
       return
 
-    this.pause()
     this._htmlAudio.currentTime = seek * this._htmlAudio.duration
     this.canplaythrough = this._deferCanPlayOnce()
     return this.play()
@@ -132,7 +129,7 @@ export default class PlayerAudio {
     const {currentTime, duration} = this._htmlAudio
     if (!this._htmlAudio)
       return
-    if (!this.nearEnd && currentTime + 5 > duration) {
+    if (!this.nearEnd && currentTime + PlayerAudio.NEAR_END_TIME > duration) {
       this.nearEnd = true
       Shared.$emit('audio:near-end', this)
     }
