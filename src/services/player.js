@@ -9,7 +9,7 @@ var p = Object.create({
 
   playGroup (nextTrack) {
     if (!nextTrack) {
-      if (this.audio && Shared.group.id !== this.group.id) {
+      if (Shared.group.id !== this.group.id) {
         this.group = Shared.group
         if (nextAudio)
           nextAudio.destroy()
@@ -68,6 +68,8 @@ var p = Object.create({
 
       VK.Storage.set('playlist', this.playlist.slice(0, 20).map((audio) => {
         const {owner_id, id, group, postId} = audio
+        if (!group)
+          console.log(audio)
         return [owner_id, id, group.id, postId]
       }))
     }
@@ -106,7 +108,7 @@ VK.inited.then(() => {
     if (playlist && playlist.length) {
       playlist = playlist.map((audio) => {
         var [owner_id, id, groupId, postId] = audio
-        return {owner_id, id, group: groups.byId(groupId), postId}
+        return {owner_id, id, group: groups.byId[groupId], postId}
       })
       VK.Audio.getById(playlist).then((playlist) => {
         p.playlist = playlist

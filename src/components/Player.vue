@@ -23,10 +23,7 @@
     .c-player__artist.u-user-select {{player.audio.info.artist}}
     .c-player__title.u-user-select {{player.audio.info.title}}
       span.c-player__duration ({{player.audio.info.duration | audioDuration}})
-    .c-player-seek(v-el:seek='', @mouseup='seekOnClick', @mouseout='seekOnMouseOut', @mousedown='seekOnMouseDown', @mousemove='seekOnMouseMove')
-      .c-player-seek__progress(:style="{width: player.audio.seek*100 + '%'}")
-      //- .c-player-seek__progress(:style="{transform: 'translateX(-'+(100 - player.audio.seek*100) + '%)'}")
-      //- .c-player-seek__loaded(:style="{transform: 'translateX(-'+(100 - (player.audio.buffered*100) + '%)')}")
+    player-seek(:audio="player.audio", @seek="setCurrentTime")
 
 </template>
 <script>
@@ -34,10 +31,12 @@ import 'styles/player.styl'
 import VK from 'services/vk'
 import player from 'services/player'
 
-var seekMouseDown
+import PlayerSeek from 'components/Player.seek.vue'
 
 export default {
   name: 'Player',
+
+  components: { PlayerSeek },
 
   data () {
     return {
@@ -52,26 +51,9 @@ export default {
       this.player.audio.info.added = true
       VK.Audio.add(player.audio.info)
     },
-
-    seekOnMouseDown (e) {
-      seekMouseDown = true
-      this.seekOnMouseMove(e)
-    },
-    seekOnMouseOut (e) {
-      seekMouseDown && this.seekOnMouseMove(e)
-      seekMouseDown = false
-    },
-    seekOnClick (e) {
-      seekMouseDown = false
-    },
-    seekOnMouseMove (e) {
-      if (!seekMouseDown)
-        return
-
-      var w = this.$els.seek.offsetWidth
-      var seek = (e.offsetX) / w
+    setCurrentTime (seek) {
       player.setCurrentTime(seek)
-    },
+    }
   },
 
   computed: {

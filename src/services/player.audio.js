@@ -5,6 +5,8 @@ import Shared from 'services/shared'
 import VK from 'services/vk'
 import _ from 'utils'
 
+const ERROR_IS_DEAD = 'PlayerAudio is already dead'
+
 export default class PlayerAudio {
 
   constructor (info) {
@@ -30,17 +32,20 @@ export default class PlayerAudio {
   _buildHtmlAudio () {
     this.dead = false
 
-    this._htmlAudio = document.createElement('AUDIO')
+    var audio = document.createElement('AUDIO')
+    this._htmlAudio = audio
     // audio.volume = this._volume = .1 // be quiet
-    this._htmlAudio.src = this.info.url
-    this._htmlAudio.onerror = this._onError
+    audio.src = this.info.url
+    audio.onerror = this._onError
+    audio.preload = 'metadata'
     
     this.canplaythrough = new Promise((resolve, reject) => {
-      _.once(this._htmlAudio, 'canplaythrough', () => {
+      _.once(audio, 'canplaythrough', () => {
         if (this.dead)
-          return reject()
-        this._htmlAudio.addEventListener('progress', this._onProgress)
-        this._htmlAudio.addEventListener('timeupdate', this._onTimeupdate)
+          return reject(ERROR_IS_DEAD)
+        this.seek = 1e-10
+        audio.addEventListener('progress', this._onProgress)
+        audio.addEventListener('timeupdate', this._onTimeupdate)
         resolve()
       })
     })
@@ -50,7 +55,7 @@ export default class PlayerAudio {
     return new Promise((resolve, reject) => {
       _.once(this._htmlAudio, 'canplaythrough', () => {
         if (this.dead)
-          return reject()
+          return reject(ERROR_IS_DEAD)
         resolve()
       })
     })
@@ -66,7 +71,7 @@ export default class PlayerAudio {
   play () {
     return this.canplaythrough.then(() => {
       if (this.dead)
-        return Promise.reject('PlayerAudio is already dead')
+        throw new Error (ERROR_IS_DEAD)
       setTimeout(() => {
         this._htmlAudio.play()
       }, 5)
@@ -106,6 +111,7 @@ export default class PlayerAudio {
     this._htmlAudio.removeEventListener('progress', this._onProgress)
     this._htmlAudio.removeEventListener('timeupdate', this._onTimeupdate)
     this._htmlAudio.onerror = null
+    this._htmlAudio.src = ''
     this._htmlAudio = null
   }
 

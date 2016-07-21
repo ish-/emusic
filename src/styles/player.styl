@@ -12,6 +12,7 @@
   
   &__info
     font-weight('light')
+    padding-bottom: 1px
   
   &__artist
     font-size: 36px
@@ -27,6 +28,7 @@
     margin-left: 1em
     
   $seek-height = 20px
+  $seek-border-width = 1px
 
   &-seek
     position: relative
@@ -35,27 +37,27 @@
     cursor: pointer
     size: 100% $seek-height
     background: $blue-light
-    
-    /* Oval 1: */
+    // box-shadow: 0 0 0 $seek-border-width white
+    border: $seek-border-width solid transparent
     background-image: radial-gradient(74% 131%, #C1F1FF 31%, #F2F8FF 100%);
+    
+    transform: translateZ(0)
     
     $progress-padding = 1px
 
     &__progress, &__loaded
-      height: $seek-height - $progress-padding * 2
+      height: $seek-height - 2
       background: $blue
-      position: absolute
-      left: $progress-padding
-      top: $progress-padding
-      width: 0%
-      min-width: (@height) !important
+      absolute: top left
+      width: 100%
+      min-width: ($seek-height - 2) !important
       pointer-events: none
       border-radius: 100px
       background-image: linear-gradient(-210deg, #C1F1FF 0%, #F2F8FF 100%);
       
     &__progress
-      transition: width .2s ease
-        box-shadow: rgb(179, 231, 255) 4px 0px 11px 0px
+      transition: transform .2s ease
+      box-shadow: rgb(179, 231, 255) 4px 0px 11px 0px
 
     &__loaded
       opacity: .5
