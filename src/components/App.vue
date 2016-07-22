@@ -3,7 +3,7 @@
 #app
   header.c-header(v-if="!showPlaylist", transition="translate-from-right")
     label(for="header-search", v-show="showEmusicLabel") E:\music\
-    input.c-header__search#header-search(v-show="!$.group", placeholder="search..", v-model="search", tabindex="1", v-el:search)
+    input.c-header__search.u-user-select#header-search(v-show="!$.group", placeholder="search..", v-model="search")
     .c-header__group(v-if="$.group") {{$.group.name}}
     hr
   group-list(v-if="showGroupList", transition="translate-from-right", :search="search")
@@ -91,7 +91,7 @@ export default {
   &__search
     margin-left: 3px
     font-weight('thin')
-    font-size: inherit
+    font-size: $header-font-size
     background: none
     // color: #C0C0C0
     color: $grey
