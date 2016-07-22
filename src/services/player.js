@@ -7,7 +7,7 @@ var nextAudio
 
 var p = Object.create({
 
-  playGroup (nextTrack) {
+  playGroup (nextTrack, dontStart) {
     if (!nextTrack) {
       if (Shared.group.id !== this.group.id) {
         this.group = Shared.group
@@ -24,6 +24,8 @@ var p = Object.create({
       if (this.audio)
         this.audio.destroy()
       this.setAudio(audio)
+      if (dontStart)
+        return
       return this.play()
     }))
   },
@@ -95,12 +97,12 @@ var p = Object.create({
 
   _wrapLoading (promise) {
     this.loading = true
-    return promise.then(() => this.loading = false)
-  }
+    return promise.then(_setNoLoading, _setNoLoading)
+  },
 })
-function dec (target, prop, desc) {
-  console.log(target, porp, desc)
-  return target
+
+function _setNoLoading () {
+  p.loading = false
 }
 
 VK.inited.then(() => {
@@ -124,6 +126,24 @@ VK.inited.then(() => {
 })
 
 Shared.$on('audio:near-end', p.playGroupSequence.bind(p))
+
+var playNextOnErrorTimeout
+var playNextOnErrorTimes = 0
+
+Shared.$on('audio:error', (audio) => {
+  if ((playNextOnErrorTimeout && playNextOnErrorTimes > 3) || p.audio !== audio) {
+    playNextOnErrorTimes = 0
+    return
+  }
+
+  playNextOnErrorTimes++
+  clearTimeout(playNextOnErrorTimeout)
+  playNextOnErrorTimeout = setTimeout(() => {
+    playNextOnErrorTimeout = null
+  }, PlayerAudio.FIREFOX_CANT_LOAD_TIMEOUT*2)
+
+  p.playGroup(true, audio.paused)
+})
 
 Object.assign(p, {
   audio: null,
