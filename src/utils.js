@@ -4,33 +4,47 @@ import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import compact from 'lodash/compact'
 import merge from 'lodash/merge'
-// import pick from 'lodash/pick'
 
 export default {
   random,
   defaults,
   noop,
-  // pick
   addScript,
   pick,
   compact,
   merge,
-  once (obj, eventName, fn) {
-    var _fn = (e) => {
-      _remove()
-      fn.call(obj, e, obj)
-    }
-    function _remove () {
-      obj.removeEventListener(eventName, _fn)
-    }
-
-    obj.addEventListener(eventName, _fn)
-    return _remove
+  once,
+  defer () {
+    var defer = {}
+    defer.promise = new Promise ((resolve, reject) => {
+      defer.resolve = resolve, defer.reject = reject
+    })
+    return defer
   },
-  log () { console.log.apply(console, arguments) },
-  clone (o) {
-    return JSON.parse(JSON.stringify(o))
+  log,
+  clone,
+}
+
+function once (obj, eventName, fn) {
+  var _fn = (e) => {
+    _remove()
+    fn.call(obj, e, obj)
   }
+  function _remove () {
+    obj.removeEventListener(eventName, _fn)
+  }
+
+  obj.addEventListener(eventName, _fn)
+  return _remove
+}
+
+function clone (o) {
+  return JSON.parse(JSON.stringify(o))
+}
+
+function log () {
+  console.log.apply(console, arguments)
+  return arguments[0]
 }
 
 function addScript (url) {
