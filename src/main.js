@@ -1,3 +1,4 @@
+import 'promise-polyfill'
 import 'styles/main.styl'
 import _ from 'utils'
 import Shared from 'services/shared'
@@ -26,7 +27,7 @@ window.App = new Vue({
 document.addEventListener('click', (e) => {
   const $el = e.target
   if (!$el.classList.contains('o-clickable'))
-    return
+    return true
 
   let time = Number($el.getAttribute('o-clickable-time'))
   $el.classList.add('is-clicked')
