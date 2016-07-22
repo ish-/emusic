@@ -1,4 +1,5 @@
 @import 'transitions.styl'
+@import 'fonts.styl'
 
 *
   font-weight('light')
@@ -28,8 +29,11 @@ body
   min-height: 100%
   height: 100%
   padding: $page-padding
-  font-family: 'Helvetica Neue', 'Roboto', 'Sans serif'
+  font-family-default()
   color: black
+  
+input
+  font-family-default()
   
 svg
   pointer-events: none
