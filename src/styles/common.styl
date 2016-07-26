@@ -17,13 +17,15 @@ transition-default()
   transition: all .2s ease
   
 font-family-default()
-  font-family: 'Helvetica Neue', 'Helvetica Neue Woff', 'Roboto', 'sans-serif', 'Arial'
+  font-family: 'Helvetica Neue', 'Helvetica Neue Light Woff', 'Roboto', 'sans-serif', 'Arial'
 
 font-weight(weight)
   if weight is 'thin'
     font-weight: 100
+    font-family: 'Helvetica Neue', 'Helvetica Neue Thin Woff', 'Roboto', 'sans-serif', 'Arial'
   if weight is 'light'
     font-weight: 300
+    font-family: 'Helvetica Neue', 'Helvetica Neue Light Woff', 'Roboto', 'sans-serif', 'Arial'
   // if weight is 'regular'
   //   font-weight: 400
   // if weight is 'medium'
