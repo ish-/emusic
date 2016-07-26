@@ -110,7 +110,7 @@ VK.inited.then(() => {
     if (playlist && playlist.length) {
       playlist = playlist.map((audio) => {
         var [owner_id, id, groupId, postId] = audio
-        return {owner_id, id, group: groups.byId[groupId], postId}
+        return {owner_id, id, group: groups.find('id', groupId), postId}
       })
       VK.Audio.getById(playlist).then((playlist) => {
         p.playlist = playlist

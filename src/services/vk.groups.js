@@ -111,17 +111,11 @@ const genres = [
         id: 35187148,
         name: "Traditional Electronic"
       }, {
-        id: 86905866,
-        name: "Progressive Electronic"
-      }, {
         id: 25616872,
         name: "IDM"
       }, {
         id: 44955915,
         name: "Glitch"
-      }, {
-        id: 37682149,
-        name: "Wonky"
       }, {
         id: 27438650,
         name: "Chiptune, 8bit"
@@ -134,9 +128,6 @@ const genres = [
       }, {
         id: 31662376,
         name: "Disco"
-      }, {
-        id: 59476633,
-        name: "Industrial"
       }, {
         id: 36058582,
         name: "EBM"
@@ -167,9 +158,6 @@ const genres = [
       }, {
         id: 109696386,
         name: "Balearic"
-      }, {
-        id: 32465350,
-        name: "UK Garage"
       }, {
         id: 86905866,
         name: "Progressive Electronic"
@@ -233,17 +221,11 @@ const genres = [
         id: 53221782,
         name: "Occult"
       }, {
-        id: 51236599,
-        name: "Space Rock"
-      }, {
         id: 37539781,
         name: "Neo-prog & Modern Prog"
       }, {
         id: 33657028,
         name: "Mathrock"
-      }, {
-        id: 26071073,
-        name: "Post-rock"
       }, {
         id: 35634642,
         name: "Slowcore / Sadcore"
@@ -259,9 +241,6 @@ const genres = [
       }, {
         id: 84115726,
         name: "New Wave"
-      }, {
-        id: 50867913,
-        name: "Coldwave"
       }, {
         id: 34724138,
         name: "Darkwave"
@@ -320,9 +299,6 @@ const genres = [
         id: 114626535,
         name: "Doom"
       }, {
-        id: 53221782,
-        name: "Occult"
-      }, {
         id: 26140698,
         name: "Black Metal"
       }, {
@@ -380,15 +356,6 @@ const genres = [
         id: 28434538,
         name: "Celtic Punk"
       }, {
-        id: 27667725,
-        name: "Post-punk & Shoegaze"
-      }, {
-        id: 74200808,
-        name: "Hardcore Punk"
-      }, {
-        id: 46365798,
-        name: "Thrash Zone"
-      }, {
         id: 27711883,
         name: "Melodic Hardcore"
       }, {
@@ -397,9 +364,6 @@ const genres = [
       }, {
         id: 28194778,
         name: "Noisecore"
-      }, {
-        id: 26436403,
-        name: "Grindcore"
       }, {
         id: 30321428,
         name: "Post-hardcore"
@@ -421,9 +385,6 @@ const genres = [
       }, {
         id: 28457642,
         name: "Mathcore"
-      }, {
-        id: 59476633,
-        name: "Industrial"
       }, {
         id: 50867913,
         name: "Coldwave"
@@ -828,14 +789,14 @@ const genres = [
   }
 ]
 
-
-genres.byId = genres.reduce((groups, genre) => {
-  genre.groups.forEach((group) => {
-    if (genre.foreign)
-      group.foreign = true
-    groups[group.id] = group
-  })
-  return groups
-}, {})
+genres.find = function (key, val) {
+  for(var i = 0, l = genres.length; i < l; i++) {
+    let groups = genres[i].groups
+    for(var ii = 0, ll = groups.length; ii < ll; ii++)
+      if (groups[ii][key] === val)
+        return groups[ii]
+  }
+  return false
+}
 
 export default genres
