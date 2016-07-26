@@ -4,6 +4,8 @@ import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import compact from 'lodash/compact'
 import merge from 'lodash/merge'
+import camelCase from 'lodash/camelCase'
+import find from 'lodash/find'
 
 export default {
   random,
@@ -14,6 +16,9 @@ export default {
   compact,
   merge,
   once,
+  find,
+  once,
+  camelCase,
   defer () {
     var defer = {}
     defer.promise = new Promise ((resolve, reject) => {
