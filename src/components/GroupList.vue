@@ -2,10 +2,10 @@
 
 .c-genre-list__container
   ul.c-genre-list
-    li.c-genre(v-for="genre in genres", v-show="showAll || !genre._hide", @click="genre._folded = !genre._folded") 
-      .c-genre__name {{* genre.name}}
+    li.c-genre(v-for="genre in genres", v-show="showAll || !genre._hide", @click="fold(genre)") 
+      .c-genre__name {{genre.name}}
       ul.c-group-list(v-show="!showAll || !genre._folded")
-        li.c-group(v-for="group in genre.groups", @click="$dispatch('group:select', group)", v-show="showAll || !group._hide") {{* group.name}}
+        li.c-group(v-for="group in genre.groups", track-by="id", @click="$dispatch('group:select', group)", v-show="showAll || !group._hide") {{group.name}}
 
 </template>
 
@@ -15,6 +15,10 @@ import genres from 'services/vk.groups'
 
 genres.forEach((genre) => {
   genre._folded = true
+  genre.groups.forEach((group) => {
+    group._hide = false
+    group.foreign = genre.foreign
+  })
 })
 
 export default {
@@ -30,24 +34,30 @@ export default {
   },
 
   methods: {
+    fold (genre) {
+      if (this.showAll)
+        genre._folded = !genre._folded
+    },
     filter (search) {
       this.showAll = search.length < 3
-      if (this.showAll)
+      if (this.showAll) {
+        this.genres = genres
         return
+      }
 
       const REGEXP = new RegExp(search, 'i')
-      this.genres.forEach((genre) => {
+      this.genres = genres.filter((genre) => {
         var anyGroup = false
         genre.groups.forEach((group) => {
           group._hide = !REGEXP.test(group.name)
           !anyGroup && (anyGroup = !group._hide)
         })
-        genre._hide = !anyGroup && !REGEXP.test(genre.name)
+        return !(!anyGroup && !REGEXP.test(genre.name))
       })
     }
   },
 
-  created () {
+  ready () {
     this.$watch('search', this.filter, {immediate: true})
   }
 }
@@ -84,8 +94,9 @@ export default {
     cursor: pointer
     display: inline-block
     font-weight('light')
-    margin-left: 28px
-    margin-bottom: 8px
+    margin: 4px 0 8px 35px
+    // margin-left: 35px
+    // margin-bottom: 8px
     font-size: 20px
     color: $grey
     
