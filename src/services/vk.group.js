@@ -51,6 +51,8 @@ export default {
   },
 
   getRandomPostAudio (group, i) {
+    if (i > 3)
+      throw new Error('Cannot find post')
     return this.getRandomPostOfRepost(group).then((items) => {
       items.sort((a, b) => {
         return a.weight === b.weight ? 0 : a.weight < b.weight ? 1 : -1
@@ -58,7 +60,7 @@ export default {
 
       for (var i in items) {
         let item = items[i]
-        let audios = _.compact(item.audios)
+        let audios = item.audios.filter((a) => a && a.url)
 
         if (!audios.length)
           continue
