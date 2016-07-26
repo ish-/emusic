@@ -6,6 +6,32 @@ import VK from 'services/vk'
 import _ from 'utils'
 
 const ERROR_IS_DEAD = 'PlayerAudio is already dead'
+const IS_MOBILE = window.hasOwnProperty('onorientationchange') && !window.hasOwnProperty('IS_CORDOVA')
+const AUDIO_POOL_LENGTH = 8
+
+var lastAudio
+
+var audioPool = []
+if (IS_MOBILE) {
+  window.addEventListener('focus', onUserEvent)
+  window.addEventListener('touchstart', onUserEvent)
+}
+
+function onUserEvent () {
+  if (lastAudio && !lastAudio.paused)
+    lastAudio.play()
+  fillAudioPool()
+}
+
+function fillAudioPool () {
+  while (audioPool.length < AUDIO_POOL_LENGTH) {
+    var audio = document.createElement('AUDIO')
+    audio.autoplay = true
+    audio.controls = true
+    audio.play()
+    audioPool.push(audio)
+  }
+}
 
 export default class PlayerAudio {
 
@@ -13,34 +39,43 @@ export default class PlayerAudio {
   static IS_FIREFOX = (/firefox/i).test(window.navigator.userAgent)
   static FIREFOX_CANT_LOAD_TIMEOUT = 5000
 
-  constructor (info) {
+  constructor (info, autoplay) {
     this.seek = 0
     this.volume = 1
     this.buffered = 0
     this.paused = true
 
-
     this.info = info || {}
     this.info.added == null && (this.info.added = false)
-
-    if (!info)
-      return
 
     this._onTimeupdate = this._onTimeupdate.bind(this)
     this._onError = this._onError.bind(this)
 
-    this._buildHtmlAudio()
+    this._buildHtmlAudio(autoplay)
   }
 
-  _buildHtmlAudio () {
+  _buildHtmlAudio (autoplay) {
     this.dead = false
 
-    var audio = document.createElement('AUDIO')
-    this._htmlAudio = audio
-    // audio.volume = this._volume = .1 // be quiet
-    audio.onerror = this._onError
-    audio.src = this.info.url
+    lastAudio = this
 
+    var audio
+    if (IS_MOBILE && audioPool.length)
+      audio = audioPool.pop()
+    else
+      audio = document.createElement('AUDIO')
+    this._htmlAudio = audio
+
+    audio.onerror = this._onError
+
+    if (this.info.url)
+      audio.src = this.info.url
+
+    if (audio.src)
+      this._setCanplaythrough()
+  }
+
+  _setCanplaythrough () {
     this.canplaythrough = new Promise((resolve, reject) => {
       if (PlayerAudio.IS_FIREFOX) {
         setTimeout(() => {
@@ -50,11 +85,11 @@ export default class PlayerAudio {
           reject()
         }, PlayerAudio.FIREFOX_CANT_LOAD_TIMEOUT)
       }
-      _.once(audio, 'canplaythrough', () => {
+      _.once(this._htmlAudio, 'canplaythrough', () => {
         if (this.dead)
           return reject(ERROR_IS_DEAD)
         this.seek = 1e-10
-        audio.addEventListener('timeupdate', this._onTimeupdate)
+        this._htmlAudio.addEventListener('timeupdate', this._onTimeupdate)
         resolve()
       })
     })
@@ -78,25 +113,29 @@ export default class PlayerAudio {
 
   play () {
     this.paused = false
-    return this.canplaythrough.then(() => {
-      if (this.dead)
-        throw new Error (ERROR_IS_DEAD)
-      setTimeout(() => {
-        this._htmlAudio.play()
-      }, 20)
-      return true
-    })
+    if (this.dead)
+      throw new Error (ERROR_IS_DEAD)
+    return Promise.all([this.canplaythrough, this._htmlAudio.play()])
   }
 
   updateInfo(e) {
-    this.updated = true
+    if (!this.info.id)
+      return
     return VK.Audio.getById([this.info]).then(([info]) => {
-      this.destroy()
-      console.log('PlayAudio update', this.toString())
-      Object.assign(this.info, info)
-      this._buildHtmlAudio()
+      this.updated = true
+      this.setInfo(info)
+
+      if (!this.paused)
+        return this.play()
       return this
     })
+  }
+
+  setInfo (info) {
+    if (!this.info.id)
+      this._setCanplaythrough()
+    Object.assign(this.info, info)
+    this._htmlAudio.src = info.url
   }
 
   setCurrentTime (seek) {
@@ -113,6 +152,9 @@ export default class PlayerAudio {
     if (!this._htmlAudio)
       return
     this.pause()
+
+    if (!this._htmlAudio)
+      return
     this._htmlAudio.removeEventListener('timeupdate', this._onTimeupdate)
     this._htmlAudio.onerror = null
     this._htmlAudio.src = ''
@@ -120,8 +162,9 @@ export default class PlayerAudio {
   }
 
   _onError (e) {
+    console.log('err', e, JSON.stringify(this))
     if (!this.updated)
-      return this.updateInfo(e).then(this.play.bind(this))
+      return this.updateInfo(e)
     Shared.$emit('audio:error', this)
     console.error('PlayerAudio error!', e)
     throw new Error(e)
