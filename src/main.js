@@ -5,7 +5,7 @@ import Shared from 'services/shared'
 
 import 'filters/audio-duration'
 
-import App from 'components/App.vue'
+import AuthWrapper from 'components/AuthWrapper.vue'
 
 Vue.prototype.$ = Shared
 Vue.prototype._log = (...args) => {
@@ -17,11 +17,10 @@ Vue.prototype._log = (...args) => {
 // if ((/lastfm/).test(location.search)) {
 //   localStorage.setItem('e-lastfm-token', location.search.match(/token=([\w\d]*)/)[1])
 // }
-// 
 
 window.App = new Vue({
   el: 'body',
-  components: { App }
+  components: {AuthWrapper},
 })
 
 document.addEventListener('click', (e) => {
