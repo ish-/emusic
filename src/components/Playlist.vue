@@ -56,7 +56,7 @@ export default {
     
 .c-audio-list
   absolute: top 45px left 0 bottom 0 right -20px
-  padding: 0 20px 0 0
+  padding: 10px 20px 0 0
 
   overflow-y: auto
 
@@ -64,19 +64,30 @@ export default {
   overflow: ellipsis
   line-height: 46px
   cursor: pointer
+  font-size: 20px
+  color: $dark-grey
   
   &__artist
     font-size: 24px
     margin-right: 10px
+    
   &__title
-    font-size: 20px
-  &__group
-    font-size: 20px
     color: $grey
+
+  &__group
+    color: $black
     float: right
     clear: both
-    font-weight('light')
+    font-weight('thin')
+    margin-left: 10px
     
+@media (max-width: 415px)
+  .c-audio
+    font-size: 16px
+    
+    &__artist
+      font-size: 20px
+
 .c-playlist__header
   font-size: 34px
   display: inline-block
