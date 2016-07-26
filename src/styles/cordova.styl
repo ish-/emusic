@@ -1,0 +1,21 @@
+$statusbar-height = 25px
+$systemui-height = 50px
+
+.t-cordova
+  &.is-under-statusbar
+    body
+      padding-top: $statusbar-height
+      
+  
+  &.is-under-systemui
+    .c-player__info
+      margin-bottom: $page-padding + $systemui-height
+      
+    .o-btn-back
+      bottom: $page-padding + $systemui-height
+      
+    .c-audio-list
+      padding-bottom: $systemui-height + 10px
+      
+    #app .o-btn-back
+      bottom: $statusbar-height + $page-padding + 30px

@@ -1,5 +1,5 @@
 .c-player
-  absolute: top $player-top bottom 0 left 0 right 0
+  absolute: top ($player-top + $page-padding) bottom 0 left 0 right 0
   z-index: 20
   
   display: flex
@@ -59,8 +59,9 @@
       background-image: linear-gradient(-210deg, #C1F1FF 0%, #F2F8FF 100%);
       
     &__progress
-      transition: transform .2s ease
-      box-shadow: rgb(179, 231, 255) 4px 0px 11px 0px
+      // box-shadow: rgb(179, 231, 255) 4px 0px 11px 0px
+      &.is-animated
+        transition: transform .2s ease
 
     &__loaded
       opacity: .5
@@ -89,8 +90,11 @@
       background: $blue
       absolute: top left
       
-      transition: box-shadow .1s ease
+      transition: all .2s ease
       box-shadow: 0 0 0 0 black inset
+      
+    &:hover:after
+      background: lighten($blue, 5)
       
     &.is-clicked:after
         box-shadow: 0 2px 5px 0 grey inset
@@ -104,9 +108,9 @@
       absolute: top -10px left -10px
       transform: scale(0.8)
       opacity: 0
-      transition: all .4s ease
+      transition: all 1s ease
       
-    &:disabled:before
+    &.is-loading:before
         transform: scale(1)
         opacity: 1
         animation: rotate .2s infinite
@@ -150,8 +154,15 @@
         transform: scale(2)
         
   .o-btn-direction
+    transform: translateX(0)
+    transition: transform .2s ease
+    &.is-clicked
+      transform translateX(5px) scaleY(.9) scaleX(1.1)
+      
     &--backward
-      transform: rotate(180deg)
+      transform: rotate(180deg) translateX(0)
+      &.is-clicked
+        transform: rotate(180deg) translateX(5px) scaleY(.9) scaleX(1.1)
       
     @media (max-width: 350px)
       svg
@@ -181,6 +192,7 @@
       transform: scale(.8)
       
 .c-player__playback
+  position: relative
   width: auto
   margin: 0 auto
   
@@ -193,3 +205,64 @@
   margin: 20px 0
   .o-btn
     vertical-align: middle
+
+
+.c-player__volume
+  &.o-slider
+    size: 20px 100px
+    position: relative
+    
+    .o-slider__bg
+      size: 10px 100%
+      border: 1px solid black
+      margin-left: 5px
+      
+    .o-slider__pointer
+      absolute: top left 5px bottom right 5px
+      background-color: grey
+      
+.c-volume
+  position: absolute
+  left: 50%
+  margin-left: 62px
+  top: -38px
+
+  .o-volume svg
+    pointer-events: auto
+    size: 30px
+    
+    fill: #00a2ea
+    // stroke: #00a2ea
+  
+  span
+    margin-left: 4px
+    vertical-align: top
+    opacity: 0
+    transition: opacity .2s .4s
+    font-size: 18px
+    line-height: 26px
+    color: grey
+    
+  &.is-pulled span
+    transition-delay: 0s
+    opacity: 1
+.c-player
+  @media (orientation: landscape) and (max-height: 370px)
+    top: $player-top
+    
+    &__playback, &__info
+      margin-top: -30px
+    &__artist
+      line-height: 36px
+      font-size: 28px
+    &__title
+      margin-bottom: 16px
+      font-size: 18px
+
+  @media (max-width: 360px)
+    &__artist
+      line-height: 36px
+      font-size: 28px
+    &__title
+      margin-bottom: 16px
+      font-size: 18px

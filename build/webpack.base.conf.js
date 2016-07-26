@@ -4,13 +4,19 @@ var utils = require('./utils')
 var webpack = require('webpack')
 var projectRoot = path.resolve(__dirname, '../')
 
-module.exports = {
+const IS_CORDOVA = !!~process.argv.indexOf('cordova')
+const publicPath = process.env.NODE_ENV === 'production' ? 
+    IS_CORDOVA ? '' : config.build.assetsPublicPath 
+  : config.dev.assetsPublicPath
+  
+
+var webpackConfig = {
   entry: {
     app: './src/main.js'
   },
   output: {
     path: config.build.assetsRoot,
-    publicPath: process.env.NODE_ENV === 'production' ? config.build.assetsPublicPath : config.dev.assetsPublicPath,
+    publicPath: publicPath,
     filename: '[name].js'
   },
   resolve: {
@@ -84,8 +90,11 @@ module.exports = {
   plugins: [
     new webpack.ProvidePlugin({
       _: "utils",
-      Vue: "vue"
+      Vue: "vue",
     }),
+    new webpack.DefinePlugin({
+      'IS_CORDOVA': IS_CORDOVA
+    })
   ],
   eslint: {
     formatter: require('eslint-friendly-formatter')
@@ -100,3 +109,5 @@ module.exports = {
       import: ['~nib/lib/nib/index.styl', '~styles/common.styl'],
   }
 }
+
+module.exports = webpackConfig

@@ -1,6 +1,6 @@
 <template lang="jade">
   .c-splash
-    svg.c-splash__emusic(v-el:emusic, version='1.1', xmlns='http://www.w3.org/2000/svg', xmlns:xlink='http://www.w3.org/1999/xlink', x='0px', y='0px', viewbox='-1 -1 372 510', style='enable-background:new 0 0 372 510;', xml:space='preserve', @transitionend="onTransitionEnd")
+    svg.c-splash__emusic(@click="!vkInited && $dispatch('splash:click')", v-el:emusic, version='1.1', xmlns='http://www.w3.org/2000/svg', xmlns:xlink='http://www.w3.org/1999/xlink', x='0px', y='0px', viewbox='-1 -1 372 510', style='enable-background:new 0 0 372 510;', xml:space='preserve', @transitionend="onTransitionEnd")
         g
           path(d='M0,374.1c0-78,0-155.5,0-233.5c123.8,0,247.3,0,371.2,0c0,31.1,0,61.9,0,93.4c-92.5,0-184.7,0-277.2,0\
           c0,15.7,0,30.7,0,46.6c92.4,0,184.8,0,277.3,0c0,31.5,0,62.3,0,93.5C247.7,374.1,124.1,374.1,0,374.1z')
@@ -44,6 +44,7 @@
 
 <script>
 import VK from 'services/vk'
+import _ from 'utils'
 
 export default {
   name: 'Splash',
@@ -65,11 +66,14 @@ export default {
       this._transtionEndFired = true
       VK.inited.then(() => {
         this.$dispatch('splash:ready')
+      }, () => {
+        _.log('SplashComponent waits for VK.inited')
       })
     }
   },
-
   created () {
+    if (process.env.NODE_ENV === 'development')
+      this.onTransitionEnd()
     VK.inited.catch(() => {
       this.vkInited = false
     })
@@ -100,7 +104,8 @@ export default {
 <style lang="stylus">
 
 .c-splash
-  absolute: top 0 bottom 0 left 0 right 0
+  size: 100% 100%
+  // absolute: top 0 bottom 0 left 0 right 0
 
   display: flex
   flex-direction: column
@@ -124,8 +129,10 @@ export default {
       margin-left: 20px
 
   &__emusic
+    cursor: pointer
     // width: 372px
     // height: 510px'
+    pointer-events: auto
     size: 200px 274px
 
     g

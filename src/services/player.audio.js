@@ -6,102 +6,75 @@ import VK from 'services/vk'
 import _ from 'utils'
 
 const ERROR_IS_DEAD = 'PlayerAudio is already dead'
-const IS_MOBILE = window.hasOwnProperty('onorientationchange') && !window.hasOwnProperty('IS_CORDOVA')
-const AUDIO_POOL_LENGTH = 8
+const IS_MOBILE = window.hasOwnProperty('onorientationchange') && !IS_CORDOVA
+const AUDIO_POOL_LENGTH = 10
 
 var lastAudio
 
-var audioPool = []
-if (IS_MOBILE) {
-  window.addEventListener('focus', onUserEvent)
-  window.addEventListener('touchstart', onUserEvent)
-}
+class PlayerAudio {
 
-function onUserEvent () {
-  if (lastAudio && !lastAudio.paused)
-    lastAudio.play()
-  fillAudioPool()
-}
-
-function fillAudioPool () {
-  while (audioPool.length < AUDIO_POOL_LENGTH) {
-    var audio = document.createElement('AUDIO')
-    audio.autoplay = true
-    audio.controls = true
-    audio.play()
-    audioPool.push(audio)
-  }
-}
-
-export default class PlayerAudio {
-
-  static NEAR_END_TIME = 5
-  static IS_FIREFOX = (/firefox/i).test(window.navigator.userAgent)
+  static NEAR_END_TIME = 3
+  static IS_FIREFOX = !IS_CORDOVA && (/firefox/i).test(window.navigator.userAgent)
+  static IS_SAFARI = !IS_CORDOVA && (/safari/i).test(window.navigator.userAgent)
   static FIREFOX_CANT_LOAD_TIMEOUT = 5000
+  static CANPLAY_TIMEOUT = 8000
 
-  constructor (info, autoplay) {
+  constructor (info, autoplay, volume = 1) {
     this.seek = 0
-    this.volume = 1
     this.buffered = 0
     this.paused = true
+    this.updated = false
+    this.faded = false
+    this.uid = _.getUID()
 
-    this.info = info || {}
-    this.info.added == null && (this.info.added = false)
+    this.info = {added: false}
 
     this._onTimeupdate = this._onTimeupdate.bind(this)
+    this._lastTimeupdate = 0
     this._onError = this._onError.bind(this)
+    this._onCheck = this._onCheck.bind(this)
+    this._onPlayPromised = this._onPlayPromised.bind(this)
+    this.nearEnd = false
 
-    this._buildHtmlAudio(autoplay)
+    this._buildHtmlAudio(autoplay, volume)
+    if (info)
+      this.setInfo(info)
   }
 
-  _buildHtmlAudio (autoplay) {
+  _buildHtmlAudio (autoplay, volume) {
     this.dead = false
 
     lastAudio = this
 
     var audio
+    if (IS_MOBILE && !audioPool.length && autoplay)
+      this.needInteract = true
     if (IS_MOBILE && audioPool.length)
-      audio = audioPool.pop()
+      audio = audioPool.pop() 
     else
       audio = document.createElement('AUDIO')
     this._htmlAudio = audio
 
     audio.onerror = this._onError
+    // audio.preload = autoplay ? 'auto' : 'metadata'
+    audio.autoplay = autoplay
+    audio.volume = volume
+    this.paused = !autoplay
 
-    if (this.info.url)
-      audio.src = this.info.url
+    this._htmlAudio.addEventListener('timeupdate', this._onTimeupdate)
+    this._cancelOnEnded = _.once(this._htmlAudio, 'ended', () => {
+      Shared.$emit('audio:ended', this)
+    })
 
-    if (audio.src)
-      this._setCanplaythrough()
   }
 
-  _setCanplaythrough () {
-    this.canplaythrough = new Promise((resolve, reject) => {
-      if (PlayerAudio.IS_FIREFOX) {
-        setTimeout(() => {
-          if (this.seek !== 0)
-            return
-          this._onError('FIREFOX_BUG')
-          reject()
-        }, PlayerAudio.FIREFOX_CANT_LOAD_TIMEOUT)
-      }
-      _.once(this._htmlAudio, 'canplaythrough', () => {
-        if (this.dead)
-          return reject(ERROR_IS_DEAD)
-        this.seek = 1e-10
-        this._htmlAudio.addEventListener('timeupdate', this._onTimeupdate)
-        resolve()
-      })
-    })
-  }
-
-  _deferCanPlayOnce (fn) {
-    var defer = _.defer()
-    this._timeupdate = defer
-    this._timeupdateResolved = false
-    return defer.promise.then(() => {
-      this._timeupdateResolved = true
-    })
+  _onCheck () {
+    if (this.seek !== 0)
+      return
+    Shared.isOnline().then(
+      () => this.updateInfo(),
+      () => this._onError('init loading timeout')
+    )
   }
 
   pause () {
@@ -114,8 +87,53 @@ export default class PlayerAudio {
   play () {
     this.paused = false
     if (this.dead)
-      throw new Error (ERROR_IS_DEAD)
-    return Promise.all([this.canplaythrough, this._htmlAudio.play()])
+      return Promise.reject()
+    if (this.needInteract)
+      Shared.show.modalInteract = true
+    return new Promise (this._onPlayPromised)
+  }
+
+  _onPlayPromised (resolve, reject) {
+    _.once(this._htmlAudio, 'timeupdate', () => {resolve(this)})
+    _.once(this._htmlAudio, 'canplay', () => {resolve(this)})
+    setTimeout(() => {reject(this)}, PlayerAudio.CANPLAY_TIMEOUT)
+    this._htmlAudio.play()
+  }
+
+  fade (destroy) {
+    if (this.faded)
+      return
+    this.faded = true
+    this.volumeSmoothly(0, (destroy ? this.destroy.bind(this) : null))
+  }
+
+  setVolume (v) {
+    if (!this._htmlAudio)
+      return
+    this._htmlAudio.volume = v
+  }
+
+  volumeSmoothly (value, cb) {
+    if (value == null)
+      return this._htmlAudio.volume
+    const period = 60
+    const _htmlAudio = this._htmlAudio
+    const speed = 0.025
+    var volume = _htmlAudio.volume
+    var v = volume
+    var factor = value - volume < 0 ? -1 : 1
+
+
+    ;(function transition () {
+      v += speed * factor
+      if ((factor < 0 && v < value) || (factor > 0 && v > value)) {
+        _htmlAudio.volume = value
+        cb && cb()
+        return
+      }
+      _htmlAudio.volume = v
+      setTimeout(transition, period)
+    })()
   }
 
   updateInfo(e) {
@@ -126,72 +144,99 @@ export default class PlayerAudio {
       this.setInfo(info)
 
       if (!this.paused)
-        return this.play()
-      return this
+        this.play()
     })
   }
 
   setInfo (info) {
-    if (!this.info.id)
-      this._setCanplaythrough()
+    if (!info.url)
+      return this._onError('No url in info')
+
     Object.assign(this.info, info)
     this._htmlAudio.src = info.url
+
+    var _check = setTimeout(this._onCheck, PlayerAudio.CANPLAY_TIMEOUT)
+    _.once(this._htmlAudio, 'canplay', () => {this.log('canplay'); clearTimeout(_check)})
   }
 
   setCurrentTime (seek) {
-    if (this.nearEnd)
-      return
+    if (!this._htmlAudio.duration || this.nearEnd)
+      return Promise.reject()
 
     this._htmlAudio.currentTime = seek * this._htmlAudio.duration
-    this.canplaythrough = this._deferCanPlayOnce()
     return this.play()
   }
 
   destroy () {
+    this.log('destroy()')
     this.dead = true
     if (!this._htmlAudio)
       return
     this.pause()
-
-    if (!this._htmlAudio)
-      return
-    this._htmlAudio.removeEventListener('timeupdate', this._onTimeupdate)
-    this._htmlAudio.onerror = null
-    this._htmlAudio.src = ''
-    this._htmlAudio = null
+    setTimeout(() => {
+      this._htmlAudio.removeEventListener('timeupdate', this._onTimeupdate)
+      this._cancelOnEnded()
+      this._htmlAudio.onerror = null
+      this._htmlAudio.src = ''
+      this._htmlAudio = null
+    }, 10)
   }
 
   _onError (e) {
-    console.log('err', e, JSON.stringify(this))
+    this.log('error ::: ', e, JSON.stringify(this))
     if (!this.updated)
       return this.updateInfo(e)
     Shared.$emit('audio:error', this)
-    console.error('PlayerAudio error!', e)
-    throw new Error(e)
   }
 
   _onTimeupdate () {
     const {currentTime, duration} = this._htmlAudio
-    if (!this._timeupdateResolved && this._timeupdate)
-      this._timeupdate.resolve()
 
     if (!this._htmlAudio)
       return
     if (!this.nearEnd && currentTime + PlayerAudio.NEAR_END_TIME > duration) {
       this.nearEnd = true
-      Shared.$emit('audio:near-end', this)
+      Shared.$emit('audio:ending', this)
     }
 
-    if (currentTime === duration) {
-      if (!this.dead)
-        Shared.$emit('audio:end', this)
-      return this.destroy()
-    }
     var seek = this._htmlAudio.currentTime / this._htmlAudio.duration
     this.seek = seek
   }
 
+  log (...args) {
+    _.log(`PlayerAudio '${this}': ${args.join()}`)
+  }
+
   toString () {
-    return `${this.info.artist} - ${this.info.title}`
+    return `(${this.info.id}) ${this.info.artist} - ${this.info.title}`
+  }
+}
+
+PlayerAudio.needInteract = false
+
+module.exports = PlayerAudio
+
+// HACK FOR MOBILE BROWSERS
+var audioPool = []
+if (IS_MOBILE) {
+  window.addEventListener('focus', onUserEvent)
+  window.addEventListener('touchstart', onUserEvent)
+}
+
+function onUserEvent () {
+  if (lastAudio && !lastAudio.paused) {
+    lastAudio.needInteract = false
+    lastAudio.play()
+  }
+  fillAudioPool()
+}
+
+function fillAudioPool () {
+  while (audioPool.length < AUDIO_POOL_LENGTH) {
+    var audio = document.createElement('AUDIO')
+    audio.autoplay = true
+    audio.controls = true
+    audio.play()
+    audioPool.push(audio)
   }
 }

@@ -8,13 +8,14 @@
       object: include ../assets/like.svg
     button.o-btn.o-btn-playlist(@click="$dispatch('playlist:show', true)")
       object: include ../assets/playlist.svg
-    a.o-btn.o-btn-post(target="_blank", href="//new.vk.com/wall{{ player.audio.info.postId }}")
+    button.o-btn.o-btn-post(@click="openPost()")
       object: include ../assets/post.svg
   .c-player__playback
+    player-volume.o-btn
     .o-btn.o-btn-direction.o-btn-direction--backward.o-clickable(@click="player.playPrev()", :style="{opacity: player.playlist.length > 1 ? 1 : 0}")
       object: include ../assets/play-direction.svg
     //- .u-relative.u-iblock
-    button.o-btn.o-btn-play.o-clickable(@click="player.togglePlay()", :disabled="player.loading")
+    button.o-btn.o-btn-play.o-clickable(@click="player.togglePlay()", :class="{'is-loading': player.loading}")
       .o-btn-play__icon-play(v-show="!isPlaying", transition="opacity-scale")
       .o-btn-play__icon-pause(v-show="isPlaying", transition="opacity-scale")
     .o-btn.o-btn-direction.o-btn-direction--forward.o-clickable(@click="player.playNext()")
@@ -31,21 +32,30 @@
 import 'styles/player.styl'
 import VK from 'services/vk'
 import player from 'services/player'
+import Shared from 'services/shared'
+import _ from 'utils'
+import 'filters/one-to-percent'
 
-import PlayerSeek from 'components/Player.seek.vue'
+import PlayerSeek from 'components/PlayerSeek.vue'
+import PlayerVolume from 'components/PlayerVolume.vue'
+import Slider from 'components/Slider.vue'
 
 export default {
   name: 'Player',
 
-  components: { PlayerSeek },
+  components: { PlayerSeek, Slider, PlayerVolume },
 
   data () {
     return {
-      player,
+      player
     }
   },
 
   methods: {
+    openPost () {
+      const url = 'https://new.vk.com/wall' + player.audio.info.postId
+      Shared.openWindow(url)
+    },
     addAudio () {
       if (this.player.audio.info.added)
         return
@@ -54,6 +64,9 @@ export default {
     },
     setCurrentTime (seek) {
       player.setCurrentTime(seek)
+    },
+    setVolume (v) {
+      player.setVolume(v)
     }
   },
 

@@ -6,7 +6,7 @@
     button.o-btn.o-btn-escape(@click="close()")
       include ../assets/crest.svg
   ul.c-audio-list
-    li.c-audio.u-relative(v-for="(i, audio) in player.playlist", @click="playAudio(i)")
+    li.c-audio.u-relative(v-for="(i, audio) in player.playlist", @click="playAudio(audio)")
       span.c-audio__group(@click.stop="playGroup(audio.group)") [{{* audio.group.name }}]
       span.c-audio__artist {{* audio.artist}}
       span.c-audio__title {{* audio.title}}
@@ -27,8 +27,8 @@ export default {
     }
   },
   methods: {
-    playAudio (i) {
-      player.playFromPlaylist(i)
+    playAudio (audio) {
+      player.playFromPlaylist(audio)
       this.close()
     },
     playGroup (group) {
@@ -54,11 +54,18 @@ export default {
     margin-top: 10px
     float: right
     
+  &__btns
+    position: relative
+    z-index: 1
+    padding-top: $page-padding
+    background: $transparent
+    
 .c-audio-list
-  absolute: top 45px left 0 bottom 0 right -20px
-  padding: 10px 20px 0 0
+  absolute: top 0 left 0 bottom 0 right -20px
+  padding: (45px + $page-padding) 20px 0 0
 
   overflow-y: auto
+  -webkit-overflow-scrolling: touch
 
 .c-audio
   overflow: ellipsis

@@ -4,6 +4,7 @@ import _ from 'utils'
 import Group from 'services/vk.group'
 import Audio from 'services/vk.audio'
 import Storage from 'services/vk.storage'
+import Shared from 'services/shared'
 import {options} from 'services/vk.request'
 
 const API_VERSION = '5.52'
@@ -27,11 +28,32 @@ function getStorageInfo () {
   return info
 }
 
+function authUri (redirectUri) {
+  return 'https://oauth.vk.com/authorize?client_id=5499210&redirect_uri='+encodeURIComponent(redirectUri)+'&display=popup&response_type=token&scope=audio,offline'
+}
+
 var vk = {
   standalone: !window.name,
 
   auth () {
-    location.href = 'https://oauth.vk.com/authorize?client_id=5499210&redirect_uri='+encodeURIComponent(location.href)+'&display=popup&response_type=token&scope=audio';
+    if (!Shared.IS_CORDOVA) 
+      return location.href = authUri(location.origin + location.pathname)
+
+    var w = Shared.cordova.open(authUri('https://oauth.vk.com/blank.html'), '_blank')
+    if (!w)
+      throw new Error ('Cannot open window')
+    w.addEventListener('loadstop', function ({url}) {
+      var hash = url.split('#')
+      if (!(hash = hash[1]))
+        return
+      var info = _.parseHash(hash)
+      if (!info || !info.accessToken)
+        return
+      localStorage.setItem('vk--auth', JSON.stringify(info))
+      w.close()
+      w = null
+      window.location.reload()
+    })
   },
 
   inited: (() => {
@@ -42,24 +64,16 @@ var vk = {
     } else {
       return new Promise(function (resolve, reject) {
         var info = getStorageInfo()
-        if (!info) {
-          let hash = location.hash.substr(1)
-          if (!hash)
-            return reject()
 
-          info = hash.split('&').reduce((hash, prop) => {
-            var [key, value] = prop.split('=')
-            hash[_.camelCase(key)] = value
-            return hash
-          }, {})
+        if (!info) {
+          info = _.parseHash(location.hash.substr(1))
           
-          if (!info || !info.userId)
-            return reject()
+          if (!info || !info.accessToken)
+            return reject('Cannot load VK auth info')
 
           location.hash = ''
           localStorage.setItem('vk--auth', JSON.stringify(info))
         }
-
 
         options.accessToken = info.accessToken
         resolve()

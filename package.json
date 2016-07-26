@@ -6,7 +6,9 @@
   "private": true,
   "scripts": {
     "dev": "node build/dev-server.js",
+    "dev-cordova": "node build/dev-server.js cordova",
     "build": "node build/build.js",
+    "build-cordova": "node build/build.js cordova",
     "unit": "karma start test/unit/karma.conf.js --single-run",
     "e2e": "node test/e2e/runner.js",
     "test": "npm run unit && npm run e2e",
@@ -14,6 +16,7 @@
   },
   "dependencies": {
     "babel-runtime": "^6.0.0",
+    "fastclick": "^1.0.6",
     "lodash": "^4.13.1",
     "vue": "^1.0.26-csp"
   },

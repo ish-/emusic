@@ -1,5 +1,6 @@
 import _ from 'utils'
 import request from 'services/vk.request'
+import VK from 'services/vk'
 
 const DEFAULT_POSTS_COUNT = 3
 
@@ -53,10 +54,15 @@ export default {
   getRandomPostAudio (group, i) {
     if (i > 3)
       throw new Error('Cannot find post')
-    return this.getRandomPostOfRepost(group).then((items) => {
-      items.sort((a, b) => {
-        return a.weight === b.weight ? 0 : a.weight < b.weight ? 1 : -1
-      })
+
+    var req
+    if (VK.standalone)
+      req = request('execute.getRandomPostAudio', {owner_id: '-' + group.id, random: _.random(0, 100000), count: 3})
+    else
+      req = this.getRandomPostOfRepost(group)
+
+    return req.then((items) => {
+      items.sort(() => Math.random() - Math.random())
 
       for (var i in items) {
         let item = items[i]
@@ -105,4 +111,4 @@ function CODE_GET_POST_OF_REPOST ({owner_id, offset, count}) { return `
     i = i+1;
   };
   return posts;
-`}
+`.replace(/  +| ?([\+\(\)\{<\}\*;,=]) ?|\n|\t/ig,'$1')}

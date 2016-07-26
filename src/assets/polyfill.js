@@ -646,9 +646,7 @@ if (!('Promise' in this)) {
         });
     };
 
-    if (typeof module != 'undefined' && module.exports) {
-        module.exports = global.Promise || Promise;
-    } else if (!global.Promise) {
+    if (!global.Promise) {
         global.Promise = Promise;
     }
 

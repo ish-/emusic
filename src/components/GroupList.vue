@@ -2,8 +2,8 @@
 
 .c-genre-list__container
   ul.c-genre-list
-    li.c-genre(v-for="genre in genres", v-show="showAll || !genre._hide", @click="fold(genre)") 
-      .c-genre__name {{genre.name}}
+    li.c-genre(v-for="genre in genres", v-show="showAll || !genre._hide") 
+      .c-genre__name(@click="fold(genre)") {{genre.name}}
       ul.c-group-list(v-show="!showAll || !genre._folded")
         li.c-group(v-for="group in genre.groups", track-by="id", @click="$dispatch('group:select', group)", v-show="showAll || !group._hide") {{group.name}}
 
@@ -24,8 +24,6 @@ genres.forEach((genre) => {
 export default {
   name: 'GroupList',
 
-  props: ['search'],
-
   data () {
     return {
       genres,
@@ -39,6 +37,7 @@ export default {
         genre._folded = !genre._folded
     },
     filter (search) {
+      search = search.trim()
       this.showAll = search.length < 3
       if (this.showAll) {
         this.genres = genres
@@ -58,7 +57,7 @@ export default {
   },
 
   ready () {
-    this.$watch('search', this.filter, {immediate: true})
+    this.$watch('$.groupsSearch', this.filter, {immediate: true})
   }
 }
 
@@ -67,21 +66,24 @@ export default {
 <style lang="stylus">
 
 .c-genre-list__container
-  absolute: top $player-top bottom 0 left 0 right -20px
+  absolute: top 0 bottom 0 left 0 right -20px
   overflow-y: auto
+  padding-top: ($player-top + $page-padding)
   
 .c-genre-list
   text-align: right
   padding: 36px 20px 58px 0
   
   .c-genre
-    margin: 12px 0
+    // margin: 12px 0
 
     .c-genre__name
       cursor: pointer
       font-size: 24px
       color: $dark-grey
-      margin-bottom: 22px
+      padding: 12px 0 12px 12px
+      display: inline-block
+      // margin-bottom: 22px
       
       &:hover
         color: black
