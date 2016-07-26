@@ -1,6 +1,6 @@
 <template lang="jade">
 
-#app
+#app(v-if="ready", transition="opacity")
   header.c-header(v-if="!showPlaylist", transition="translate-from-right")
     label(for="header-search", v-show="showEmusicLabel") E:\music\
     input.c-header__search.u-user-select#header-search(v-show="!$.group", placeholder="search..", v-model="search")
@@ -41,15 +41,17 @@ export default {
 
   created () {
     this.$on('playlist:show', (bool) => this.showPlaylist = bool)
-    this.$on('group:select', (group, foreign) => {
+    this.$on('group:select', (group) => {
       Shared.group = group
       if (group)
         player.playGroup()
+      else
+        this.$set('search' ,'')
     })
+  },
 
-    VK.inited.then(() => {
-      this.ready = true
-    })
+  ready () {
+    this.ready = true
   },
 
   computed: {
@@ -76,6 +78,9 @@ export default {
   position: relative
   height: 100%
   overflow: hidden
+  
+  max-width: 600px
+  margin: 0 auto
 
 .c-header
   font-size: $header-font-size
@@ -108,7 +113,7 @@ export default {
   size: 50px
   border-radius: 50px
   border: 1px solid $dark-grey
-  absolute: left 20px bottom 20px
+  absolute: left 0 bottom $page-padding
   
   transition: all .2s ease-out
   transition-delay: .3s
