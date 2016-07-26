@@ -21,8 +21,9 @@
       object: include ../assets/play-direction.svg
   .c-player__info
     .c-player__artist.u-user-select {{player.audio.info.artist}}
-    .c-player__title.u-user-select {{player.audio.info.title}}
+    .c-player__title.u-user-select
       span.c-player__duration ({{player.audio.info.duration | audioDuration}})
+      | {{player.audio.info.title}}
     player-seek(:audio="player.audio", @seek="setCurrentTime")
 
 </template>

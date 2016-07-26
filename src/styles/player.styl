@@ -13,19 +13,22 @@
   &__info
     font-weight('light')
     padding-bottom: 1px
+    margin-bottom: $page-padding
   
   &__artist
     font-size: 36px
     overflow: ellipsis
-    margin-bottom: 5px
+    line-height: 48px
     
   &__title
     font-size: 24px
     overflow: ellipsis
     margin-bottom: 20px
+    line-height: 32px
     
   &__duration
     margin-left: 1em
+    float: right
     
   $seek-height = 20px
   $seek-border-width = 1px
@@ -70,6 +73,9 @@
     size: 140px
     margin: 0 50px
     position: relative  
+    
+    @media (max-width: 415px)
+      margin: 0 20px
 
     > *
       z-index: 1
@@ -147,6 +153,10 @@
     &--backward
       transform: rotate(180deg)
       
+    @media (max-width: 350px)
+      svg
+        width: 50px
+      
   .o-btn-escape, .o-btn-playlist
     float: right
     margin-left: 20px
@@ -168,7 +178,7 @@
       fill: red
       
     &.is-clicked
-      transform: scale(1.2)
+      transform: scale(.8)
       
 .c-player__playback
   width: auto
