@@ -1,4 +1,4 @@
-import 'promise-polyfill'
+import 'assets/polyfill'
 import 'styles/main.styl'
 import _ from 'utils'
 import Shared from 'services/shared'
